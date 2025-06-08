@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>You & Me </title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: linear-gradient(135deg, #f8bbd0, #fce4ec);
+      padding: 30px;
+      color: #880e4f;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+    }
+
+    .upload-section {
+      text-align: center;
+      margin-bottom: 30px;
+      
+    }
+
+    input[type="file"], input[type="text"], button {
+      font-family: 'Kanit', sans-serif;
+      font-size: 1rem;
+      margin: 5px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #d81b60;
+    }
+
+    button {
+      background-color: #e91e63;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #c2185b;
+    }
+
+    .gallery {
+      max-width: 600px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .photo-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      position: relative;
+      text-align: left;
+    }
+
+    .photo-card img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .photo-caption {
+      padding: 12px 16px;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .photo-date {
+      font-size: 0.9rem;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ffebee;
+      border: none;
+      border-radius: 50%;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .lightbox {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+    }
+
+    .caption {
+      margin-top: 10px;
+      color: #fff;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📷 Our Memories</h1>
+
+  <div class="upload-section">
+    <input type="file" accept="image/*" id="uploadInput">
+    <input type="text" id="captionInput" placeholder="ใส่คำบรรยายรูปนี้ ✍️">
+    <button onclick="handleUpload()">อัปโหลดรูป 💌</button>
+    <button onclick="undoDelete()">↩️ กู้คืนรูปล่าสุด</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <div style="text-align:center">
+      <img id="lightbox-img" src="">
+      <div class="caption" id="caption"></div>
+    </div>
+  </div>
+
+  <script>
+    let lastDeletedImage = null;
+    const defaultImages = [];
+
+    const galleryDiv = document.getElementById('gallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const captionText = document.getElementById('caption');
+
+    function getUploadedImages() {
+      const data = localStorage.getItem('uploadedImages');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveUploadedImage(base64, caption) {
+      const uploaded = getUploadedImages();
+      uploaded.push({ file: base64, caption, timestamp: Date.now() });
+      localStorage.setItem('uploadedImages', JSON.stringify(uploaded));
+      renderGallery();
+    }
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('th-TH', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    function renderGallery() {
+      galleryDiv.innerHTML = "";
+
+      const uploaded = getUploadedImages();
+      const grouped = {};
+
+      uploaded.forEach(img => {
+        const date = formatDate(img.timestamp || Date.now());
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(img);
+      });
+
+      Object.entries(grouped).forEach(([date, images]) => {
+        images.forEach((image, i) => {
+          const card = document.createElement('div');
+          card.className = 'photo-card';
+
+          const img = document.createElement('img');
+          img.src = image.file;
+          img.alt = image.caption;
+          img.onclick = () => showLightbox(image);
+
+          const captionDiv = document.createElement('div');
+          captionDiv.className = 'photo-caption';
+          captionDiv.innerHTML = `<strong>${image.caption}</strong><div class="photo-date">📅 ${date}</div>`;
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'delete-btn';
+          deleteBtn.textContent = '🗑️';
+          deleteBtn.title = 'ลบรูปนี้';
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            const index = getUploadedImages().indexOf(image);
+            deleteUploadedImage(index);
+          };
+
+          card.appendChild(img);
+          card.appendChild(deleteBtn);
+          card.appendChild(captionDiv);
+          galleryDiv.appendChild(card);
+        });
+      });
+    }
+
+    function showLightbox(image) {
+      lightboxImg.src = image.file;
+      captionText.textContent = image.caption;
+      lightbox.style.display = "flex";
+    }
+
+    function closeLightbox() {
+      lightbox.style.display = "none";
+    }
+
+    function handleUpload() {
+      const fileInput = document.getElementById('uploadInput');
+      const caption = document.getElementById('captionInput').value;
+
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("เลือกรูปก่อนน้าา 📷");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const base64 = e.target.result;
+        saveUploadedImage(base64, caption || "ไม่มีคำบรรยาย");
+        fileInput.value = '';
+        document.getElementById('captionInput').value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function deleteUploadedImage(index) {
+      const uploaded = getUploadedImages();
+      const toDelete = uploaded[index];
+      const confirmDelete = confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรูปนี้?");
+      if (!confirmDelete) return;
+
+      lastDeletedImage = toDelete;
+      uploaded.splice(index, 1);
+      localStorage.setItem('uploadedImages', JSON.stringify(uploaded));
+      renderGallery();
+    }
+
+    function undoDelete() {
+      if (!lastDeletedImage) {
+        alert("ยังไม่มีรูปที่ลบล่าสุด");
+        return;
+      }
+      const uploaded = getUploadedImages();
+      uploaded.push(lastDeletedImage);
+      localStorage.setItem('uploadedImages', JSON.stringify(uploaded));
+      lastDeletedImage = null;
+      renderGallery();
+    }
+
+    renderGallery();
+  </script>
+</body>
+</html>
+

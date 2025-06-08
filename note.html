@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Today Note (X Style)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f7f9f9;
+      color: #0f1419;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background: white;
+      border-right: 1px solid #e1e8ed;
+      padding: 20px;
+    }
+    .sidebar button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: #0f1419;
+      padding: 12px 0;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .sidebar button:hover {
+      background-color: #f0f0f0;
+      border-radius: 25px;
+      padding-left: 10px;
+    }
+    .main {
+      flex: 1;
+      padding: 30px 40px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    .note-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .note-date {
+      color: #536471;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+    .note-text {
+      font-size: 1.1rem;
+      white-space: pre-line;
+    }
+    .nav-buttons {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .btn {
+      font-size: 0.9rem;
+      padding: 8px 18px;
+      margin: 0 8px;
+      border: 1px solid #1d9bf0;
+      background: white;
+      color: #1d9bf0;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #e8f5fd;
+    }
+    .add-note textarea {
+      width: 100%;
+      border: 1px solid #ccd6dd;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      resize: none;
+      margin-bottom: 12px;
+      background: white;
+    }
+    .add-note button {
+      background: #1d9bf0;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .add-note button:hover {
+      background: #0d8ddb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <button id="homeBtn">🏠 หน้าแรก</button>
+      <button id="todayBtn">📝 Today Note</button>
+      <button id="memoryBtn">❤️ ความทรงจำ</button>
+    </div>
+
+    <div class="main">
+      <h1 id="mainTitle">Today Note</h1>
+      <div class="note-card">
+        <div class="note-date" id="noteDate">วันที่</div>
+        <div class="note-text" id="noteBox">กำลังโหลดโน้ต...</div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn" id="prevBtn">ย้อนวัน</button>
+        <button class="btn" id="nextBtn">ถัดไป</button>
+      </div>
+
+      <div class="add-note" id="addNoteSection">
+        <textarea id="newNote" rows="4" placeholder="พิมพ์โน้ตน่ารัก ๆ ให้แฟน..."></textarea>
+        <button id="addNoteBtn">เพิ่มโน้ต</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const noteBox = document.getElementById('noteBox');
+    const noteDate = document.getElementById('noteDate');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const newNoteInput = document.getElementById('newNote');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const addNoteSection = document.getElementById('addNoteSection');
+    const mainTitle = document.getElementById('mainTitle');
+
+    // Sidebar Buttons
+    const homeBtn = document.getElementById('homeBtn');
+    const todayBtn = document.getElementById('todayBtn');
+    const memoryBtn = document.getElementById('memoryBtn');
+
+    let today = new Date().toISOString().slice(0, 10);
+    let currentDate = today;
+    let notes = JSON.parse(localStorage.getItem('todayNotes') || '[]');
+
+    function getNoteByDate(dateStr) {
+      return notes.find(note => note.date === dateStr);
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("th-TH", {
+        year: 'numeric', month: 'long', day: 'numeric',
+      });
+    }
+
+    function showNote(dateStr) {
+      const note = getNoteByDate(dateStr);
+      noteDate.textContent = formatDate(dateStr);
+      noteBox.textContent = note ? note.text : "ยังไม่มีโน้ตสำหรับวันนี้ ลองเขียนอะไรดูนะ 😊";
+    }
+
+    prevBtn.addEventListener('click', () => {
+      const prevDate = new Date(currentDate);
+      prevDate.setDate(prevDate.getDate() - 1);
+      currentDate = prevDate.toISOString().slice(0, 10);
+      showNote(currentDate);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const nextDate = new Date(currentDate);
+      nextDate.setDate(nextDate.getDate() + 1);
+      const nextStr = nextDate.toISOString().slice(0, 10);
+      if (nextStr <= today) {
+        currentDate = nextStr;
+        showNote(currentDate);
+      }
+    });
+
+    addNoteBtn.addEventListener('click', () => {
+      const text = newNoteInput.value.trim();
+      if (!text) {
+        alert("กรุณาพิมพ์โน้ตก่อนเพิ่ม!");
+        return;
+      }
+      const index = notes.findIndex(n => n.date === currentDate);
+      if (index >= 0) {
+        notes[index].text = text;
+      } else {
+        notes.push({ date: currentDate, text });
+      }
+      localStorage.setItem("todayNotes", JSON.stringify(notes));
+      newNoteInput.value = "";
+      showNote(currentDate);
+      alert("เพิ่มโน้ตสำเร็จ! 💌");
+    });
+
+    // === Sidebar Actions ===
+    homeBtn.addEventListener('click', () => {
+      currentDate = today;
+      mainTitle.textContent = "Today Note";
+      addNoteSection.style.display = "block";
+      showNote(currentDate);
+    });
+
+    todayBtn.addEventListener('click', () => {
+      currentDate = today;
+      mainTitle.textContent = "Today Note";
+      addNoteSection.style.display = "block";
+      showNote(currentDate);
+    });
+
+    memoryBtn.addEventListener('click', () => {
+      mainTitle.textContent = "❤️ ความทรงจำ";
+      noteDate.textContent = "เร็ว ๆ นี้";
+      noteBox.textContent = "ฟีเจอร์นี้กำลังพัฒนา อย่าลืมกลับมาดูนะ 😉";
+      addNoteSection.style.display = "none";
+    });
+
+    showNote(currentDate);
+  </script>
+</body>
+</html>
