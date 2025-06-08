@@ -2,124 +2,14 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>TimeLoveMoment</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Kanit', sans-serif;
-      background-color: #fff5f8;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    h1 {
-      font-size: 3rem;
-      color: #e91e63;
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .btn {
-      padding: 15px 30px;
-      font-size: 1.5rem;
-      margin: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .yes-btn {
-      background-color: #ff4081;
-      color: white;
-    }
-    .no-btn {
-      background-color: #e0e0e0;
-      color: #333;
-    }
-    .btn-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 40px;
-      margin-top: 20px;
-      position: relative;
-    }
-    .popup {
-      position: fixed;
-      top: 25%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #ffcdd2;
-      padding: 30px 40px;
-      border-radius: 20px;
-      font-size: 2rem;
-      font-weight: bold;
-      color: #d50000;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      display: none;
-      z-index: 9999;
-      text-align: center;
-      max-width: 90%;
-      animation: fadeIn 0.5s ease-forwards;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Will You Marry Me?</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Will You Marry Me</h1>
-  <div class="btn-container">
-    <button class="btn yes-btn" id="yesBtn">Yes</button>
-    <button class="btn no-btn" id="noBtn">No</button>
-    <div class="popup" id="popupMsg">ใจร้ายจัง ทำไมไม่ตอบตกลงง</div>
-  </div>
-
-  <script>
-    const noBtn = document.getElementById("noBtn");
-    const yesBtn = document.getElementById("yesBtn");
-    const popup = document.getElementById("popupMsg");
-
-    let yesSize = 2;
-    let hasmoved = false;
-    let noClicks = 0;
-
-    const messages = [
-      "ใจร้ายจัง ทำไมไม่ตอบตกลงง",
-      "งอนแล้วนะ!!",
-      "จะให้เขินไปถึงไหนกันนน",
-      "ถ้ารักก็อย่ากด No กันสิ",
-      "เธอไม่รักเค้าแล้วเหรอ?",
-      "ตอบ Yes แล้วจะมีข้าวให้กินทุกวันนะ",
-      "No อีกที เดี๋ยวร้องไห้จริงนะ",
-      "ความรักของเราไม่พอหรือไงง?"
-    ];
-
-    noBtn.addEventListener("click", () => {
-      if (!hasmoved) {
-        noBtn.style.position = "absolute";
-        hasmoved = true;
-      }
-
-      const x = Math.floor(Math.random() * (window.innerWidth - 100));
-      const y = Math.floor(Math.random() * (window.innerHeight - 100));
-      noBtn.style.left = `${x}px`;
-      noBtn.style.top = `${y}px`;
-
-      yesSize += 0.5;
-      yesBtn.style.transform = `scale(${yesSize})`;
-
-      noClicks++;
-      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-      popup.innerText = randomMsg;
-      popup.style.display = 'block';
-
-      setTimeout(() => {
-        popup.style.display = 'none';
-      }, 2000);
-    });
-
-    yesBtn.addEventListener("click", () => {
-      window.location.href = "time.html";
-    });
-  </script>
+  <h1>Will you marry me?</h1>
+  <button id="yes">Yes</button>
+  <button id="no">No</button>
+  <script src="script.js"></script>
 </body>
 </html>
